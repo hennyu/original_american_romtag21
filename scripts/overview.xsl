@@ -11,10 +11,10 @@
     This script produces overviews of the contents in the bibliography Bib-ACMé and the corpus Conha19 (in numbers and plots).
     
     How to call the script:
-        java -jar /home/ulrike/Programme/saxon/saxon9he.jar /home/ulrike/Git/conha19/tei/nh0001.xml /home/ulrike/Git/papers/original_american_romtag21/overview.xsl
+        java -jar /home/ulrike/Programme/saxon/saxon9he.jar /home/ulrike/Git/conha19/tei/nh0001.xml /home/ulrike/Git/original_american_romtag21/scripts/overview.xsl
     -->
     
-    <xsl:variable name="output-dir">/home/ulrike/Git/papers/original_american_romtag21/metadata_output/</xsl:variable>
+    <xsl:variable name="output-dir">/home/ulrike/Git/original_american_romtag21/metadata_output/</xsl:variable>
     <xsl:variable name="plotly-source">/home/ulrike/Git/scripts-nh/plotly/plotly-latest.min.js</xsl:variable>
     <xsl:variable name="bibacme-authors" select="doc('/home/ulrike/Git/bibacme/app/data/authors.xml')//person"/>
     <xsl:variable name="bibacme-works" select="doc('/home/ulrike/Git/bibacme/app/data/works.xml')//bibl"/>
@@ -44,7 +44,7 @@
         <!--<xsl:call-template name="plot-subgenres-novela-by-decade"/>-->
         <!--<xsl:call-template name="plot-subgenres-explicit-signals"/>-->
         <!--<xsl:call-template name="plot-subgenres-explicit-signals-corpus"/>-->
-        <xsl:call-template name="plot-subgenres-identity-by-decade"/>
+        <!--<xsl:call-template name="plot-subgenres-identity-by-decade"/>-->
         <!--<xsl:call-template name="plot-subgenres-signals"/>-->
         <!--<xsl:call-template name="plot-subgenres-signals-corpus"/>-->
         <!--<xsl:call-template name="plot-subgenres-litHist"/>-->
@@ -81,6 +81,11 @@
         <!--<xsl:call-template name="plot-novelas-originales-by-country"/>-->
         <!--<xsl:call-template name="plot-novelas-americanas-by-country"/>-->
         <!--<xsl:call-template name="plot-novelas-nacionales-by-country"/>-->
+        <!--<xsl:call-template name="plot-novelas-originales-by-decade-bib-2"/>-->
+        <xsl:call-template name="plot-novelas-americanas-by-decade-bib-2"/>
+        <xsl:call-template name="plot-novelas-mexicanas-by-decade-bib-2"/>
+        <xsl:call-template name="plot-novelas-argentinas-by-decade-bib-2"/>
+        <xsl:call-template name="plot-novelas-cubanas-by-decade-bib-2"/>
         <!--<xsl:call-template name="plot-novelas-originales-by-decade-bib"/>
         <xsl:call-template name="plot-novelas-originales-by-decade-corp"/>
         <xsl:call-template name="plot-novelas-originales-1880-bib"/>
@@ -3617,6 +3622,390 @@
                         ]
                         };
                         Plotly.newPlot('myDiv', data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    <xsl:template name="plot-novelas-cubanas-by-decade-bib-2">
+        <!-- creates a series of donut charts showing the number of novels with identity labels per decade, for Bib-ACMé -->
+        
+        <xsl:result-document href="{concat($output-dir,'novelas-cubanas-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 500px;"></div>
+                    <script>
+                        var labels = ["novela cubana", "other"];
+                        var data = [
+                        <xsl:for-each select="$decades">
+                            {
+                            <xsl:variable name="works-decade" select="cligs:get-works-by-decade(current(), $bibacme-works)"/>
+                            <xsl:variable name="works-identity" select="index-of(cligs:get-primary-labels($works-decade, 'identity', 'novela cubana'),'novela cubana')"/>
+                            values: [<xsl:value-of select="count($works-identity)"/>, <xsl:value-of select="count($works-decade) - count($works-identity)"/>],
+                            labels: labels,
+                            type: "pie",
+                            sort: false,
+                            name: "<xsl:value-of select="."/>",
+                            domain: {row: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0</xsl:when>
+                                <xsl:otherwise>1</xsl:otherwise>
+                            </xsl:choose>, column: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">
+                                    <xsl:value-of select="position() - 1"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position() - 6"/>
+                                </xsl:otherwise>
+                            </xsl:choose>},
+                            hole: 0.4
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ];
+                        
+                        var layout = {
+                        grid: {rows: 2, columns: 5},
+                        legend: {orientation: "h", font: {size: 16}},
+                        annotations: [
+                        <xsl:for-each select="$decades">
+                            {
+                            font: {
+                            size: 14
+                            },
+                            showarrow: false,
+                            text: '<xsl:value-of select="."/>',
+                            x: <xsl:choose>
+                                <xsl:when test="position() = (1,6)">0.066</xsl:when>
+                                <xsl:when test="position() = (2,7)">0.265</xsl:when>
+                                <xsl:when test="position() = (3,8)">0.5</xsl:when>
+                                <xsl:when test="position() = (4,9)">0.73</xsl:when>
+                                <xsl:otherwise>0.935</xsl:otherwise>
+                            </xsl:choose>,
+                            y: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0.8</xsl:when>
+                                <xsl:otherwise>0.2</xsl:otherwise>
+                            </xsl:choose>
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ]
+                        };
+                        
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
+    <xsl:template name="plot-novelas-argentinas-by-decade-bib-2">
+        <!-- creates a series of donut charts showing the number of novels with identity labels per decade, for Bib-ACMé -->
+        
+        <xsl:result-document href="{concat($output-dir,'novelas-argentinas-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 500px;"></div>
+                    <script>
+                        var labels = ["novela argentina", "other"];
+                        var data = [
+                        <xsl:for-each select="$decades">
+                            {
+                            <xsl:variable name="works-decade" select="cligs:get-works-by-decade(current(), $bibacme-works)"/>
+                            <xsl:variable name="works-identity" select="index-of(cligs:get-primary-labels($works-decade, 'identity', 'novela argentina'),'novela argentina')"/>
+                            values: [<xsl:value-of select="count($works-identity)"/>, <xsl:value-of select="count($works-decade) - count($works-identity)"/>],
+                            labels: labels,
+                            type: "pie",
+                            sort: false,
+                            name: "<xsl:value-of select="."/>",
+                            domain: {row: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0</xsl:when>
+                                <xsl:otherwise>1</xsl:otherwise>
+                            </xsl:choose>, column: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">
+                                    <xsl:value-of select="position() - 1"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position() - 6"/>
+                                </xsl:otherwise>
+                            </xsl:choose>},
+                            hole: 0.4
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ];
+                        
+                        var layout = {
+                        grid: {rows: 2, columns: 5},
+                        legend: {orientation: "h", font: {size: 16}},
+                        annotations: [
+                        <xsl:for-each select="$decades">
+                            {
+                            font: {
+                            size: 14
+                            },
+                            showarrow: false,
+                            text: '<xsl:value-of select="."/>',
+                            x: <xsl:choose>
+                                <xsl:when test="position() = (1,6)">0.066</xsl:when>
+                                <xsl:when test="position() = (2,7)">0.265</xsl:when>
+                                <xsl:when test="position() = (3,8)">0.5</xsl:when>
+                                <xsl:when test="position() = (4,9)">0.73</xsl:when>
+                                <xsl:otherwise>0.935</xsl:otherwise>
+                            </xsl:choose>,
+                            y: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0.8</xsl:when>
+                                <xsl:otherwise>0.2</xsl:otherwise>
+                            </xsl:choose>
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ]
+                        };
+                        
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
+    <xsl:template name="plot-novelas-mexicanas-by-decade-bib-2">
+        <!-- creates a series of donut charts showing the number of novels with identity labels per decade, for Bib-ACMé -->
+        
+        <xsl:result-document href="{concat($output-dir,'novelas-mexicanas-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 500px;"></div>
+                    <script>
+                        var labels = ["novela mexicana", "other"];
+                        var data = [
+                        <xsl:for-each select="$decades">
+                            {
+                            <xsl:variable name="works-decade" select="cligs:get-works-by-decade(current(), $bibacme-works)"/>
+                            <xsl:variable name="works-identity" select="index-of(cligs:get-primary-labels($works-decade, 'identity', 'novela mexicana'),'novela mexicana')"/>
+                            values: [<xsl:value-of select="count($works-identity)"/>, <xsl:value-of select="count($works-decade) - count($works-identity)"/>],
+                            labels: labels,
+                            type: "pie",
+                            sort: false,
+                            name: "<xsl:value-of select="."/>",
+                            domain: {row: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0</xsl:when>
+                                <xsl:otherwise>1</xsl:otherwise>
+                            </xsl:choose>, column: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">
+                                    <xsl:value-of select="position() - 1"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position() - 6"/>
+                                </xsl:otherwise>
+                            </xsl:choose>},
+                            hole: 0.4
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ];
+                        
+                        var layout = {
+                        grid: {rows: 2, columns: 5},
+                        legend: {orientation: "h", font: {size: 16}},
+                        annotations: [
+                        <xsl:for-each select="$decades">
+                            {
+                            font: {
+                            size: 14
+                            },
+                            showarrow: false,
+                            text: '<xsl:value-of select="."/>',
+                            x: <xsl:choose>
+                                <xsl:when test="position() = (1,6)">0.066</xsl:when>
+                                <xsl:when test="position() = (2,7)">0.265</xsl:when>
+                                <xsl:when test="position() = (3,8)">0.5</xsl:when>
+                                <xsl:when test="position() = (4,9)">0.73</xsl:when>
+                                <xsl:otherwise>0.935</xsl:otherwise>
+                            </xsl:choose>,
+                            y: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0.8</xsl:when>
+                                <xsl:otherwise>0.2</xsl:otherwise>
+                            </xsl:choose>
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ]
+                        };
+                        
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
+    <xsl:template name="plot-novelas-americanas-by-decade-bib-2">
+        <!-- creates a series of donut charts showing the number of novels with identity labels per decade, for Bib-ACMé -->
+        
+        <xsl:result-document href="{concat($output-dir,'novelas-americanas-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 500px;"></div>
+                    <script>
+                        var labels = ["novela americana", "other"];
+                        var data = [
+                        <xsl:for-each select="$decades">
+                            {
+                            <xsl:variable name="works-decade" select="cligs:get-works-by-decade(current(), $bibacme-works)"/>
+                            <xsl:variable name="works-identity" select="index-of(cligs:get-primary-labels($works-decade, 'identity', 'novela americana'),'novela americana')"/>
+                            values: [<xsl:value-of select="count($works-identity)"/>, <xsl:value-of select="count($works-decade) - count($works-identity)"/>],
+                            labels: labels,
+                            type: "pie",
+                            sort: false,
+                            name: "<xsl:value-of select="."/>",
+                            domain: {row: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0</xsl:when>
+                                <xsl:otherwise>1</xsl:otherwise>
+                            </xsl:choose>, column: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">
+                                    <xsl:value-of select="position() - 1"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position() - 6"/>
+                                </xsl:otherwise>
+                            </xsl:choose>},
+                            hole: 0.4
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ];
+                        
+                        var layout = {
+                        grid: {rows: 2, columns: 5},
+                        legend: {orientation: "h", font: {size: 16}},
+                        annotations: [
+                        <xsl:for-each select="$decades">
+                            {
+                            font: {
+                            size: 14
+                            },
+                            showarrow: false,
+                            text: '<xsl:value-of select="."/>',
+                            x: <xsl:choose>
+                                <xsl:when test="position() = (1,6)">0.066</xsl:when>
+                                <xsl:when test="position() = (2,7)">0.265</xsl:when>
+                                <xsl:when test="position() = (3,8)">0.5</xsl:when>
+                                <xsl:when test="position() = (4,9)">0.73</xsl:when>
+                                <xsl:otherwise>0.935</xsl:otherwise>
+                            </xsl:choose>,
+                            y: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0.8</xsl:when>
+                                <xsl:otherwise>0.2</xsl:otherwise>
+                            </xsl:choose>
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ]
+                        };
+                        
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
+    <xsl:template name="plot-novelas-originales-by-decade-bib-2">
+        <!-- creates a series of donut charts showing the number of novels with identity labels per decade, for Bib-ACMé -->
+        
+        <xsl:result-document href="{concat($output-dir,'novelas-originales-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 500px;"></div>
+                    <script>
+                        var labels = ["novela original", "other"];
+                        var data = [
+                        <xsl:for-each select="$decades">
+                            {
+                            <xsl:variable name="works-decade" select="cligs:get-works-by-decade(current(), $bibacme-works)"/>
+                            <xsl:variable name="works-identity" select="$works-decade[term[@type='subgenre.summary.identity.explicit']='novela original']"/>
+                            values: [<xsl:value-of select="count($works-identity)"/>, <xsl:value-of select="count($works-decade) - count($works-identity)"/>],
+                            labels: labels,
+                            type: "pie",
+                            sort: false,
+                            name: "<xsl:value-of select="."/>",
+                            domain: {row: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0</xsl:when>
+                                <xsl:otherwise>1</xsl:otherwise>
+                            </xsl:choose>, column: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">
+                                    <xsl:value-of select="position() - 1"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position() - 6"/>
+                                </xsl:otherwise>
+                            </xsl:choose>},
+                            hole: 0.4
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ];
+                        
+                        var layout = {
+                        grid: {rows: 2, columns: 5},
+                        legend: {orientation: "h", font: {size: 16}},
+                        annotations: [
+                        <xsl:for-each select="$decades">
+                            {
+                            font: {
+                            size: 14
+                            },
+                            showarrow: false,
+                            text: '<xsl:value-of select="."/>',
+                            x: <xsl:choose>
+                                <xsl:when test="position() = (1,6)">0.066</xsl:when>
+                                <xsl:when test="position() = (2,7)">0.265</xsl:when>
+                                <xsl:when test="position() = (3,8)">0.5</xsl:when>
+                                <xsl:when test="position() = (4,9)">0.73</xsl:when>
+                                <xsl:otherwise>0.935</xsl:otherwise>
+                            </xsl:choose>,
+                            y: <xsl:choose>
+                                <xsl:when test="position() &lt;= 5">0.8</xsl:when>
+                                <xsl:otherwise>0.2</xsl:otherwise>
+                            </xsl:choose>
+                            }
+                            <xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>
+                        ]
+                        };
+                        
+                        Plotly.newPlot("myDiv", data, layout);
                     </script>
                 </body>
             </html>
