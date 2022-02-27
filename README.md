@@ -1,4 +1,4 @@
-# _Novelas originales y americanas_. Data and scripts
+# _Novelas originales y americanas_. Data and Scripts
 
 This repository contains data and scripts for an analysis of references to identity (e.g. "novela original", "novela americana", "novela mexicana") in Spanish American 19th century novels. It accompanies a paper presented at the XXXVII. Romanistentag in 2021 ("_Novelas originales y americanas_: A Digital Analysis of References to Identity in Subtitles of Spanish American 19th Century Novels").
 
@@ -8,5 +8,5 @@ For the text analysis, the tool [_stylo_](https://github.com/computationalstylis
 
 Please cite this repository as:
 
-Henny-Krahmer, Ulrike (2022). _Novelas originales y americanas. Data and scripts._ Github.com. https://github.com/hennyu/original_american_romtag21.
+Henny-Krahmer, Ulrike (2022). _Novelas originales y americanas. Data and Scripts._ Github.com. https://github.com/hennyu/original_american_romtag21.
 
