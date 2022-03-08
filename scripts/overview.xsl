@@ -40,6 +40,11 @@
         
         <!--<xsl:call-template name="numbers"/>-->
         
+        <!-- ##### GENERAL OVERVIEWS ##### -->
+        
+        <!--<xsl:call-template name="plot-works-per-decade"/>-->
+        <!--<xsl:call-template name="plot-works-per-decade-country"/>-->
+        
         <!-- ##### SUBGENRES ##### -->
         <!--<xsl:call-template name="plot-subgenres-novela-by-decade"/>-->
         <!--<xsl:call-template name="plot-subgenres-explicit-signals"/>-->
@@ -81,13 +86,13 @@
         <!--<xsl:call-template name="plot-novelas-originales-by-country"/>-->
         <!--<xsl:call-template name="plot-novelas-americanas-by-country"/>-->
         <!--<xsl:call-template name="plot-novelas-nacionales-by-country"/>-->
-        <!--<xsl:call-template name="plot-novelas-originales-by-decade-bib-2"/>-->
-        <xsl:call-template name="plot-novelas-americanas-by-decade-bib-2"/>
+        <xsl:call-template name="plot-novelas-originales-by-decade-bib-2"/>
+        <!--<xsl:call-template name="plot-novelas-americanas-by-decade-bib-2"/>
         <xsl:call-template name="plot-novelas-mexicanas-by-decade-bib-2"/>
         <xsl:call-template name="plot-novelas-argentinas-by-decade-bib-2"/>
-        <xsl:call-template name="plot-novelas-cubanas-by-decade-bib-2"/>
-        <!--<xsl:call-template name="plot-novelas-originales-by-decade-bib"/>
-        <xsl:call-template name="plot-novelas-originales-by-decade-corp"/>
+        <xsl:call-template name="plot-novelas-cubanas-by-decade-bib-2"/>-->
+        <!--<xsl:call-template name="plot-novelas-originales-by-decade-bib"/>-->
+        <!--<xsl:call-template name="plot-novelas-originales-by-decade-corp"/>
         <xsl:call-template name="plot-novelas-originales-1880-bib"/>
         <xsl:call-template name="plot-novelas-originales-1880-corp"/>
         <xsl:call-template name="plot-novelas-americanas-by-decade-bib"/>
@@ -686,6 +691,119 @@
     </xsl:template>
     
         
+    <xsl:template name="plot-works-per-decade">
+        <!-- creates a bar chart showing the number of works per decade, comparing Bib-ACMé and Conha19 -->
+        
+        <xsl:variable name="work-publication-years-bib" select="cligs:get-first-edition-years($bibacme-works)"/>
+        <xsl:variable name="work-publication-years-corp" select="cligs:get-first-edition-years($corpus-works)"/>
+        
+        <xsl:result-document href="{concat($output-dir,'works-per-decade.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 700px;"></div>
+                    <script>
+                        var trace1 = {
+                        x: [<xsl:value-of select="string-join($decades,',')"/>],
+                        y: [<xsl:value-of select="cligs:get-num-decades($decades, $work-publication-years-bib)"/>],
+                        name: "Bib-ACMé",
+                        type: "bar"
+                        };
+                        
+                        var trace2 = {
+                        x: [<xsl:value-of select="string-join($decades,',')"/>],
+                        y: [<xsl:value-of select="cligs:get-num-decades($decades, $work-publication-years-corp)"/>],
+                        name: "Conha19",
+                        type: "bar"
+                        };
+                        
+                        var data = [trace1, trace2];
+                        var layout = {
+                        barmode: "group",
+                        xaxis: {tickmode: "linear", dtick: 10, title: "decade", tickfont: {size: 16}},
+                        yaxis: {title: "number of novels"},
+                        legend: {orientation: "h", font: {size: 18}},
+                        font: {size: 16},
+                        annotations: [
+                        <xsl:for-each select="$decades">{
+                            <xsl:variable name="num-decade-bib" select="cligs:get-num-decades(.,$work-publication-years-bib)"/>
+                            <xsl:variable name="num-decade-corp" select="cligs:get-num-decades(.,$work-publication-years-corp)"/>
+                            x: <xsl:value-of select="."/>,
+                            y: <xsl:value-of select="$num-decade-corp"/>,
+                            text: "<xsl:value-of select="round($num-decade-corp div ($num-decade-bib div 100))"/>%",
+                            showarrow: false,
+                            xanchor: "left",
+                            yanchor: "bottom",
+                            font: {size: 16}
+                            }<xsl:if test="position() != last()">,</xsl:if>
+                        </xsl:for-each>]
+                        };
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
+    <xsl:template name="plot-works-per-decade-country">
+        <!-- creates a bar chart showing the number of works per decade and by country, in Conha19 -->
+        
+        <xsl:variable name="work-publication-years-corp-MX" select="cligs:get-first-edition-years($corpus-works[country='México'])"/>
+        <xsl:variable name="work-publication-years-corp-AR" select="cligs:get-first-edition-years($corpus-works[country='Argentina'])"/>
+        <xsl:variable name="work-publication-years-corp-CU" select="cligs:get-first-edition-years($corpus-works[country='Cuba'])"/>
+        
+        <xsl:result-document href="{concat($output-dir,'works-per-decade-country.html')}" method="html" encoding="UTF-8">
+            <html>
+                <head>
+                    <!-- Plotly.js -->
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                </head>
+                <body>
+                    <!-- Plotly chart will be drawn inside this DIV -->
+                    <div id="myDiv" style="width: 900px; height: 600px;"></div>
+                    <script>
+                        var trace1 = {
+                        x: [<xsl:value-of select="string-join($decades,',')"/>],
+                        y: [<xsl:value-of select="cligs:get-num-decades($decades, $work-publication-years-corp-MX)"/>],
+                        name: "Mexico",
+                        type: "bar"
+                        };
+                        
+                        var trace2 = {
+                        x: [<xsl:value-of select="string-join($decades,',')"/>],
+                        y: [<xsl:value-of select="cligs:get-num-decades($decades, $work-publication-years-corp-AR)"/>],
+                        name: "Argentina",
+                        type: "bar"
+                        };
+                        
+                        var trace3 = {
+                        x: [<xsl:value-of select="string-join($decades,',')"/>],
+                        y: [<xsl:value-of select="cligs:get-num-decades($decades, $work-publication-years-corp-CU)"/>],
+                        name: "Cuba",
+                        type: "bar"
+                        };
+                        
+                        var data = [trace1, trace2, trace3];
+                        var layout = {
+                            barmode: "stack",
+                            xaxis: {tickmode: "linear", dtick: 10, title: "decade", tickfont: {size: 16}, automargin: true},
+                            yaxis: {title: "number of novels"},
+                            legend: {x: 1, xanchor: 'right', y: 1, font: {size: 18}},
+                            font: {size: 16}
+                            };
+                        Plotly.newPlot("myDiv", data, layout);
+                    </script>
+                </body>
+            </html>
+        </xsl:result-document>
+    </xsl:template>
+    
+    
     <xsl:template name="plot-subgenres-novela-by-decade">
         <!-- creates a series of donut charts showing the number of "novelas" per decade, for Bib-ACMé -->
         
@@ -2240,29 +2358,16 @@
                         
                         var layout = {
                         barmode: 'group',
-                        font: {size: 14},
+                        font: {size: 18},
                         legend: {
                         x: 1,
                         xanchor: 'right',
                         y: 1,
-                        font: {size: 16}
+                        font: {size: 18}
                         },
                         title: 'Subgenre labels related to the identity in Bib-ACMé and Conha19',
-                        xaxis: {title: 'subgenres', automargin: true},
-                        yaxis: {title: 'number of works'},
-                        annotations: [
-                        <xsl:for-each select="$identity-labels-set">{
-                            <xsl:variable name="num-bib" select="count($bibacme-works[.//term[starts-with(@type,'subgenre.summary.identity')]/normalize-space(.) = current()])"/>
-                            <xsl:variable name="num-corp" select="count($corpus-works[.//term[starts-with(@type,'subgenre.summary.identity')]/normalize-space(.) = current()])"/>
-                            x: <xsl:value-of select="position() - 1"/>,
-                            y: <xsl:value-of select="$num-corp"/>,
-                            text: "<xsl:value-of select="round($num-corp div ($num-bib div 100))"/>%",
-                            showarrow: false,
-                            xanchor: "left",
-                            yanchor: "bottom",
-                            font: {size: 12}
-                            }<xsl:if test="position() != last()">,</xsl:if>
-                        </xsl:for-each>]
+                        xaxis: {title: 'subgenre', automargin: true, tickangle: 45},
+                        yaxis: {title: 'number of novels'}
                         };
                         
                         Plotly.newPlot('myDiv', data, layout);
@@ -3978,8 +4083,9 @@
                         ];
                         
                         var layout = {
+                        font: {size: 14},
                         grid: {rows: 2, columns: 5},
-                        legend: {orientation: "h", font: {size: 16}},
+                        legend: {orientation: "h", font: {size: 14}},
                         annotations: [
                         <xsl:for-each select="$decades">
                             {
